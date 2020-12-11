@@ -42,7 +42,7 @@ def get_mnist(data_dir, rank, size):
 
     batch_size = 128
     num_workers = 8
-    download = False
+    download = True
 
     dataset_train = datasets.MNIST(root=data_dir, train=False,
                             transform=trans,

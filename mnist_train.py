@@ -25,16 +25,18 @@ def setup(rank, world_size):
     )
 
 def demo_basic(rank, world_size, max_epochs=5, verbose=False):
+    # map rank [0, 1, 2] => ['cuda:1', 'cuda:2', 'cuda:3']
+    gpu_rank = rank + 1
     # create model and move it to GPU with id rank
     if torch.cuda.is_available():
-        device = torch.device('cuda:{}'.format(rank + 1))
+        device = torch.device('cuda:{}'.format(gpu_rank))
     else:
         device = torch.device('cpu')
 
     model = resnet34().to(device)
 
     if torch.cuda.is_available():
-        ddp_model = DDP(model, device_ids=[rank + 1])
+        ddp_model = DDP(model, device_ids=[gpu_rank])
     else:
         ddp_model = DDP(model)
 
