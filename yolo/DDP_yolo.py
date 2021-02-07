@@ -1,6 +1,7 @@
-import sys, os
-os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3'
-# 
+import sys
+import os
+# os.environ['CUDA_VISIBLE_DEVICES'] = '1,2,3'
+#
 import numpy as np
 import torch
 from torch import nn
@@ -8,14 +9,14 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
-# 
+#
 import cv2
 from PIL import Image
 import matplotlib.pyplot as plt
-# 
+#
 import glob
 import time
-# 
+#
 from DDP_yolo_data import get_PIL_data
 
 # =========== Plot ===========
@@ -33,7 +34,8 @@ colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
 
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):
     # Plots one bounding box on image img
-    tl = line_thickness or round(0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
+    tl = line_thickness or round(
+        0.002 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
     color = color or [random.randint(0, 255) for _ in range(3)]
     c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
     cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
@@ -43,15 +45,16 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
 #         t_size = 1
         c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
         cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
-        cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
+        cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3,
+                    [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 # =========== Communication ===========
 def setup(rank, world_size):
     # initialize the process group
     dist.init_process_group('nccl',
-        init_method='tcp://127.0.0.1:8901',
-        rank=rank, world_size=world_size
-    )
+                            init_method='tcp://127.0.0.1:8901',
+                            rank=rank, world_size=world_size
+                            )
 
 # ========== Running ==========
 def infrence(rank, size):
@@ -103,7 +106,7 @@ def infrence(rank, size):
                 # print(text)
 
             plot_one_box(pred, out_img, label=text, color=c, line_thickness=3)
-        
+
         if plot_file:
             # plt.figure(figsize=(12, 12))
             plt.imshow(out_img)
@@ -112,12 +115,12 @@ def infrence(rank, size):
             plt.clf()
             out_imgs.append(Image.fromarray(out_img))
             # plt.show()
-    
+
     if rank == 0:
         # output gif
         fp_out = 'out.gif'
         out_imgs[0].save(fp=fp_out, format='GIF', append_images=out_imgs,
-         save_all=True, duration=200, loop=0)
+                         save_all=True, duration=200, loop=0)
 
 if __name__ == '__main__':
     argv = sys.argv
